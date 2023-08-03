@@ -2,6 +2,7 @@ package Proj_Board.test.service;
 
 import Proj_Board.test.model.Board;
 import Proj_Board.test.repository.BoardRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,20 +24,23 @@ public class BoardServiceImpl implements BoardService{
 
     @Override
     public Board findOneBoard(Long id) {
-        return boardRepository.findById(id);
+        return boardRepository.findById(id).orElse(null);
     }
 
     @Override
+    @Transactional
     public void upload(Board board) {
         boardRepository.save(board);
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         boardRepository.deleteById(id);
     }
 
     @Override
+    @Transactional
     public void update(Board board){
         boardRepository.update(board);
     }

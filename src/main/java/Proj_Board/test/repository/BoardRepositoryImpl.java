@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class BoardRepositoryImpl implements BoardRepository{
@@ -24,8 +25,8 @@ public class BoardRepositoryImpl implements BoardRepository{
     }
 
     @Override
-    public Board findById(Long id) {
-        return em.find(Board.class, id);
+    public Optional<Board> findById(Long id) {
+        return Optional.ofNullable(em.find(Board.class, id));
     }
 
     @Override

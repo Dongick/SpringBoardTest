@@ -10,6 +10,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -47,7 +48,7 @@ public class BoardServiceTest {
         mockBoard.setTitle("Test Title");
         mockBoard.setComment("Test Comment");
 
-        when(mockBoardRepository.findById(1L)).thenReturn(mockBoard);
+        when(mockBoardRepository.findById(1L)).thenReturn(Optional.of(mockBoard));
 
         Board result = boardService.findOneBoard(1L);
 

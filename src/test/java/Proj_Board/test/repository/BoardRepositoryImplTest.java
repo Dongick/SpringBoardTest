@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -49,7 +50,7 @@ public class BoardRepositoryImplTest {
         boardRepository.save(board1);
 
         when(em.find(Board.class, 1L)).thenReturn(board1);
-        Board result = boardRepository.findById(1L);
+        Optional<Board> result = boardRepository.findById(1L);
 
         verify(em, times(1)).find(Board.class, 1L);
 

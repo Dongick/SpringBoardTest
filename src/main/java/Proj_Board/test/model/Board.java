@@ -1,6 +1,7 @@
 package Proj_Board.test.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -23,7 +24,7 @@ public class Board {
     @CreationTimestamp
     // 게시물 생성일
     private LocalDateTime createdAt;
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     @UpdateTimestamp
     // 게시물 수정일
     private LocalDateTime updatedAt;
@@ -50,5 +51,13 @@ public class Board {
 
     public String getComment() {
         return comment;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }
