@@ -29,6 +29,25 @@ public class Board {
     // 게시물 수정일
     private LocalDateTime updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userId", nullable = false)
+    private User user;
+
+    @Transient
+    private boolean canEditAndDelete;
+
+    public boolean isCanEditAndDelete() {
+        return canEditAndDelete;
+    }
+
+    public void setCanEditAndDelete(boolean canEditAndDelete) {
+        this.canEditAndDelete = canEditAndDelete;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -59,5 +78,9 @@ public class Board {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public User getUser() {
+        return user;
     }
 }
