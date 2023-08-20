@@ -46,7 +46,7 @@ public class BoardServiceTest {
         Board mockBoard = new Board();
         mockBoard.setId(1L);
         mockBoard.setTitle("Test Title");
-        mockBoard.setComment("Test Comment");
+        mockBoard.setDetail("Test Detail");
 
         when(mockBoardRepository.findById(1L)).thenReturn(Optional.of(mockBoard));
 
@@ -60,7 +60,7 @@ public class BoardServiceTest {
     public void upload(){
         Board board = new Board();
         board.setTitle("Test Title");
-        board.setComment("Test Comment");
+        board.setDetail("Test Detail");
 
         boardService.upload(board);
 
@@ -80,7 +80,7 @@ public class BoardServiceTest {
     public void update(){
         Board board = new Board();
         board.setTitle("Test Title");
-        board.setComment("Test Comment");
+        board.setDetail("Test Detail");
 
         boardService.update(board);
 

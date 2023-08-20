@@ -35,7 +35,7 @@ public class BoardRepositoryImplTest {
     public void save(){
         Board board = new Board();
         board.setTitle("Test Title");
-        board.setComment("Test Comment");
+        board.setDetail("Test Detail");
 
         boardRepository.save(board);
 
@@ -46,7 +46,7 @@ public class BoardRepositoryImplTest {
         Board board1 = new Board();
         board1.setId(1L);
         board1.setTitle("Test1 Title");
-        board1.setComment("Test1 Comment");
+        board1.setDetail("Test1 Detail");
         boardRepository.save(board1);
 
         when(em.find(Board.class, 1L)).thenReturn(board1);
@@ -60,11 +60,11 @@ public class BoardRepositoryImplTest {
     public void findAll(){
         Board board1 = new Board();
         board1.setTitle("Test1 Title");
-        board1.setComment("Test1 Comment");
+        board1.setDetail("Test1 Detail");
 
         Board board2 = new Board();
         board2.setTitle("Test2 Title");
-        board2.setComment("Test2 Comment");
+        board2.setDetail("Test2 Detail");
 
         List<Board> mockResult = Arrays.asList(board1, board2);
 
@@ -84,7 +84,7 @@ public class BoardRepositoryImplTest {
         Board board1 = new Board();
         board1.setId(1L);
         board1.setTitle("Test1 Title");
-        board1.setComment("Test1 Comment");
+        board1.setDetail("Test1 Detail");
 
         when(em.find(Board.class, 1L)).thenReturn(board1);
         boardRepository.deleteById(1L);
@@ -95,7 +95,7 @@ public class BoardRepositoryImplTest {
     public void update(){
         Board board1 = new Board();
         board1.setTitle("Test1 Title");
-        board1.setComment("Test1 Comment");
+        board1.setDetail("Test1 Detail");
 
         boardRepository.update(board1);
         verify(em, times(1)).merge(board1);

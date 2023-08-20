@@ -1,10 +1,13 @@
 package Proj_Board.test.controller;
 
 import Proj_Board.test.model.Board;
+import Proj_Board.test.model.Comment;
 import Proj_Board.test.model.User;
 import Proj_Board.test.service.BoardService;
+import Proj_Board.test.service.CommentService;
 import Proj_Board.test.service.UserService;
 import jakarta.servlet.http.HttpSession;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -14,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,17 +36,20 @@ public class BoardControllerTest {
     @MockBean
     private UserService userService;
 
+    @MockBean
+    private CommentService commentService;
+
     @Test
     public void testGetBoardList() throws Exception {
         Board board1 = new Board();
         board1.setId(1L);
         board1.setTitle("Test1 Title");
-        board1.setComment("Test1 Comment");
+        board1.setDetail("Test1 Detail");
 
         Board board2 = new Board();
         board2.setId(2L);
         board2.setTitle("Test2 Title");
-        board2.setComment("Test2 Comment");
+        board2.setDetail("Test2 Detail");
 
         List<Board> boardList = new ArrayList<>();
         boardList.add(board1);
@@ -57,12 +64,12 @@ public class BoardControllerTest {
     }
 
     @Test
-    public void testGetBoardDetail() throws Exception {
+    public void testGetBoardDetailNoComment() throws Exception {
         // Test setup
         Board board1 = new Board();
         board1.setId(1L);
         board1.setTitle("Test1 Title");
-        board1.setComment("Test1 Comment");
+        board1.setDetail("Test1 Detail");
 
         String userId = "testUser";
 
@@ -81,6 +88,42 @@ public class BoardControllerTest {
                 .andExpect(MockMvcResultMatchers.model().attributeExists("board"))
                 .andExpect(MockMvcResultMatchers.model().attributeExists("userId"))
                 .andExpect(MockMvcResultMatchers.model().attribute("board", board1))
+                .andExpect(MockMvcResultMatchers.model().attribute("userId", userId))
+                .andExpect(MockMvcResultMatchers.model().attribute("board.comments", Matchers.nullValue()));
+    }
+
+    @Test
+    public void testGetBoardDetailYesComment() throws Exception {
+        // Test setup
+        Board board = new Board();
+        board.setId(1L);
+        board.setTitle("Test1 Title");
+        board.setDetail("Test1 Detail");
+
+        String userId = "testUser";
+
+        User user = new User();
+        user.setUserId(userId);
+        board.setUser(user);
+
+        Comment comment = new Comment();
+        comment.setId(1L);
+        comment.setContent("Test1 Comment");
+        comment.setCreatedAt(LocalDateTime.now());
+        comment.setUser(user);
+        comment.setBoard(board);
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", userId);
+
+        when(boardService.findOneBoard(1L)).thenReturn(board);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/board/{id}", 1L).session(session))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.view().name("detail"))
+                .andExpect(MockMvcResultMatchers.model().attributeExists("board"))
+                .andExpect(MockMvcResultMatchers.model().attributeExists("userId"))
+                .andExpect(MockMvcResultMatchers.model().attribute("board", board))
                 .andExpect(MockMvcResultMatchers.model().attribute("userId", userId));
     }
 
@@ -108,7 +151,7 @@ public class BoardControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/board/upload")
                 .param("title", "Test Title")
-                .param("comment", "Test Comment")
+                .param("detail", "Test Detail")
                 .session(session))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
                 .andExpect(MockMvcResultMatchers.redirectedUrl("/board"));
@@ -120,7 +163,7 @@ public class BoardControllerTest {
         Board board1 = new Board();
         board1.setId(1L);
         board1.setTitle("Test1 Title");
-        board1.setComment("Test1 Comment");
+        board1.setDetail("Test1 Detail");
 
         String userId = "testUser";
         User user = new User();
@@ -148,7 +191,7 @@ public class BoardControllerTest {
         Board board1 = new Board();
         board1.setId(1L);
         board1.setTitle("Test1 Title");
-        board1.setComment("Test1 Comment");
+        board1.setDetail("Test1 Detail");
 
         String userId = "testUser";
         User user = new User();
@@ -165,7 +208,7 @@ public class BoardControllerTest {
                         .session(session)
                         .param("id", "1")
                         .param("title", "Updated Title")
-                        .param("comment", "Updated Comment"))
+                        .param("detail", "Updated Detail"))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
                 .andExpect(MockMvcResultMatchers.redirectedUrl("/board"));
 
@@ -188,5 +231,46 @@ public class BoardControllerTest {
                 .andExpect(MockMvcResultMatchers.redirectedUrl("/board"));
 
         verify(boardService, times(1)).delete(boardId);
+    }
+
+    @Test
+    public void testPostAddComment() throws Exception{
+        Board board = new Board();
+        board.setId(1L);
+        board.setTitle("Test1 Title");
+        board.setDetail("Test1 Detail");
+
+        String userId = "testUser";
+
+        User user = new User();
+        user.setUserId(userId);
+        board.setUser(user);
+
+        Long postId = 1L;
+        String content = "Test comment";
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", userId);
+
+        when(userService.findByUserId(userId)).thenReturn(user);
+        when(boardService.findOneBoard(postId)).thenReturn(board);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/board/comment/add")
+                .session(session)
+                .param("postId", String.valueOf(postId))
+                .param("content", content))
+            .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
+            .andExpect(MockMvcResultMatchers.redirectedUrl("/board/" + postId));
+
+        Comment comment = new Comment();
+        comment.setContent(content);
+        comment.setUser(user);
+        comment.setBoard(board);
+
+        verify(commentService, times(1)).upload(argThat(commentArg ->
+                commentArg.getContent().equals(comment.getContent()) &&
+                        commentArg.getUser().equals(comment.getUser()) &&
+                        commentArg.getBoard().equals(comment.getBoard())
+        ));
     }
 }

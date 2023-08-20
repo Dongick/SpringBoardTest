@@ -1,11 +1,12 @@
 package Proj_Board.test.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Board {
@@ -17,9 +18,9 @@ public class Board {
     @Column(name = "title", nullable = false, length = 20)
     // 게시물  제목
     private String title;
-    @Column(name = "comment", nullable = false, length = 100)
+    @Column(name = "detail", nullable = false, length = 100)
     // 게시물 내용
-    private String comment;
+    private String detail;
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     // 게시물 생성일
@@ -32,6 +33,10 @@ public class Board {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId", nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
 
     @Transient
     private boolean canEditAndDelete;
@@ -56,8 +61,8 @@ public class Board {
         this.title = title;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setDetail(String detail) {
+        this.detail = detail;
     }
 
     public Long getId() {
@@ -68,8 +73,8 @@ public class Board {
         return title;
     }
 
-    public String getComment() {
-        return comment;
+    public String getDetail() {
+        return detail;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -82,5 +87,13 @@ public class Board {
 
     public User getUser() {
         return user;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 }
