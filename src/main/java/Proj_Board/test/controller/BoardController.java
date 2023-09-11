@@ -1,9 +1,11 @@
 package Proj_Board.test.controller;
 
 import Proj_Board.test.model.Board;
+import Proj_Board.test.model.ChildrenComment;
 import Proj_Board.test.model.Comment;
 import Proj_Board.test.model.User;
 import Proj_Board.test.service.BoardService;
+import Proj_Board.test.service.ChildrenCommentService;
 import Proj_Board.test.service.CommentService;
 import Proj_Board.test.service.UserService;
 import jakarta.servlet.http.HttpSession;
@@ -20,12 +22,14 @@ public class BoardController {
     private final BoardService boardService;
     private final UserService userService;
     private final CommentService commentService;
+    private final ChildrenCommentService childrenCommentService;
 
     @Autowired
-    public BoardController(BoardService boardService, UserService userService, CommentService commentService) {
+    public BoardController(BoardService boardService, UserService userService, CommentService commentService, ChildrenCommentService childrenCommentService) {
         this.boardService = boardService;
         this.userService = userService;
         this.commentService = commentService;
+        this.childrenCommentService = childrenCommentService;
     }
 
     // 전체 게시판 화면
@@ -56,6 +60,17 @@ public class BoardController {
             board.setCanEditAndDelete(true);
         }
 
+        for(Comment comment : board.getComments()){
+            if (comment.getUser().getUserId().equals(userId)) {
+                comment.setCanEditAndDelete(true);
+            }
+            for(ChildrenComment childrenComment : comment.getChildrenComments()){
+                if (childrenComment.getUser().getUserId().equals((userId))) {
+                    childrenComment.setCanEditAndDelete(true);
+                }
+            }
+        }
+
         model.addAttribute("board", board);
 
         return "detail";
@@ -73,6 +88,7 @@ public class BoardController {
         return "upload";
     }
 
+    // 게시판 업로드
     @PostMapping("/upload")
     public String postUploadBoard(@RequestParam String title, @RequestParam String detail, HttpSession session, Model model){
         String userId = (String) session.getAttribute("userId");
@@ -88,8 +104,6 @@ public class BoardController {
         board.setUser(user);
 
         boardService.upload(board);
-
-        //model.addAttribute("userId", userId);
 
         return "redirect:/board";
     }
@@ -113,14 +127,13 @@ public class BoardController {
 
     }
 
+    // 게시판 수정
     @PostMapping("/update")
     public String postUpdateBoard(@RequestParam Long id, @RequestParam String title, @RequestParam String detail, HttpSession session, Model model){
         String userId = (String) session.getAttribute("userId");
         if (userId == null) {
             return "redirect:/login";
         }
-
-        //model.addAttribute("userId", userId);
 
         Board board = boardService.findOneBoard(id);
 
@@ -132,6 +145,7 @@ public class BoardController {
         return "redirect:/board";
     }
 
+    // 게시판 삭제
     @PostMapping("/delete")
     public String postDeleteBoard(@RequestParam Long id, HttpSession session, Model model){
         String userId = (String) session.getAttribute("userId");
@@ -141,20 +155,19 @@ public class BoardController {
 
         boardService.delete(id);
 
-        //model.addAttribute("userId", userId);
-
         return "redirect:/board";
     }
 
+    // 게시판 댓글 추가
     @PostMapping("/comment/add")
-    public String postAddComment(@RequestParam Long postId, @RequestParam String content, HttpSession session){
+    public String postAddComment(@RequestParam Long id, @RequestParam String content, HttpSession session){
         String userId = (String) session.getAttribute("userId");
         if (userId == null) {
             return "redirect:/login";
         }
 
         User user = userService.findByUserId(userId);
-        Board board = boardService.findOneBoard(postId);
+        Board board = boardService.findOneBoard(id);
 
         Comment comment = new Comment();
         comment.setContent(content);
@@ -163,6 +176,67 @@ public class BoardController {
 
         commentService.upload(comment);
 
-        return "redirect:/board/" + postId;
+        return "redirect:/board/" + id;
+    }
+
+    // 게시판 댓글 삭제
+    @PostMapping("/comment/delete")
+    public String postDeleteComment(@RequestParam Long id, @RequestParam Long commentDeleteId, HttpSession session){
+        String userId = (String) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        commentService.delete(commentDeleteId);
+
+        return "redirect:/board/" + id;
+    }
+
+    // 게시판 댓글 수정
+//    @PostMapping("/comment/update/{id}")
+//    public String postUpdateComment(@PathVariable Long id, HttpSession session){
+//        String userId = (String) session.getAttribute("userId");
+//        if (userId == null) {
+//            return "redirect:/login";
+//        }
+//
+//        Comment comment = commentService.findOneComment(id);
+//        comment.set
+//
+//        return "redirect:/board/" + id;
+//    }
+
+    // 게시판 대댓글 추가
+    @PostMapping("/childrenComment/add")
+    public String postAddChildrenComment(@RequestParam Long id, @RequestParam Long parentCommentId, @RequestParam String content, HttpSession session){
+        String userId = (String) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        User user = userService.findByUserId(userId);
+        Comment comment = commentService.findOneComment(parentCommentId);
+
+        ChildrenComment childrenComment = new ChildrenComment();
+        childrenComment.setContent(content);
+        childrenComment.setUser(user);
+        childrenComment.setComment(comment);
+
+        childrenCommentService.upload(childrenComment);
+
+        return "redirect:/board/" + id;
+    }
+
+    // 게시판 대댓글 삭제
+    @PostMapping("/childrenComment/delete")
+    public String postDeleteChildrenComment(@RequestParam Long id, @RequestParam Long childrenCommentDeleteId, HttpSession session){
+        String userId = (String) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        childrenCommentService.delete(childrenCommentDeleteId);
+
+        return "redirect:/board/" + id;
     }
 }

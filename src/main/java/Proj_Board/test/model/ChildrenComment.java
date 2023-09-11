@@ -4,39 +4,33 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-public class Comment {
+public class ChildrenComment {
 
-    // 댓글 id
+    // 대댓글 id
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 댓글 내용
+    // 대댓글 내용
     @Column(nullable = false, length = 200)
     private String content;
 
-    // 댓글 생성자
+    // 대댓글 생성자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId", nullable = false)
     private User user;
 
-    // 댓글이 달린 게시글
+    // 대댓글이 달린 게시글
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "boardId", nullable = false)
-    private Board board;
+    @JoinColumn(name = "commentId", nullable = false)
+    private Comment comment;
 
-    // 댓글 생성일
+    // 대댓글 생성일
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    // 해당 댓글에 달린 대댓글
-    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChildrenComment> childrenComments = new ArrayList<>();
 
     // 수정 삭제 버튼 유무
     @Transient
@@ -74,25 +68,17 @@ public class Comment {
         this.user = user;
     }
 
-    public Board getBoard() {
-        return board;
+    public Comment getComment() {
+        return comment;
     }
 
-    public void setBoard(Board board) {
-        if(this.board != board){
-            this.board = board;
-            if (board != null) {
-                board.getComments().add(this);
+    public void setComment(Comment comment) {
+        if(this.comment != comment){
+            this.comment = comment;
+            if (comment != null) {
+                comment.getChildrenComments().add(this);
             }
         }
-    }
-
-    public List<ChildrenComment> getChildrenComments() {
-        return childrenComments;
-    }
-
-    public void setChildrenComments(List<ChildrenComment> childrenComments) {
-        this.childrenComments = childrenComments;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -102,4 +88,5 @@ public class Comment {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
 }

@@ -1,9 +1,7 @@
 package Proj_Board.test.repository;
 
-import Proj_Board.test.model.Board;
 import Proj_Board.test.model.User;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,8 +12,6 @@ import org.mockito.MockitoAnnotations;
 import static org.assertj.core.api.Assertions.*;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class UserRepositoryImplTest {

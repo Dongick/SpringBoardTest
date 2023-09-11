@@ -30,14 +30,16 @@ public class Board {
     // 게시물 수정일
     private LocalDateTime updatedAt;
 
+    // 게시물 생성자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId", nullable = false)
     private User user;
 
+    // 해당 게시물에 달린 댓글
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
-
+    // 수정 삭제 버튼 유무
     @Transient
     private boolean canEditAndDelete;
 

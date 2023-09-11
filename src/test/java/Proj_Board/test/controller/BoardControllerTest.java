@@ -1,9 +1,11 @@
 package Proj_Board.test.controller;
 
 import Proj_Board.test.model.Board;
+import Proj_Board.test.model.ChildrenComment;
 import Proj_Board.test.model.Comment;
 import Proj_Board.test.model.User;
 import Proj_Board.test.service.BoardService;
+import Proj_Board.test.service.ChildrenCommentService;
 import Proj_Board.test.service.CommentService;
 import Proj_Board.test.service.UserService;
 import jakarta.servlet.http.HttpSession;
@@ -21,6 +23,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.when;
 
@@ -38,6 +42,9 @@ public class BoardControllerTest {
 
     @MockBean
     private CommentService commentService;
+
+    @MockBean
+    private ChildrenCommentService childrenCommentService;
 
     @Test
     public void testGetBoardList() throws Exception {
@@ -93,7 +100,7 @@ public class BoardControllerTest {
     }
 
     @Test
-    public void testGetBoardDetailYesComment() throws Exception {
+    public void testGetBoardDetailYesCommentNoChildrenComment() throws Exception {
         // Test setup
         Board board = new Board();
         board.setId(1L);
@@ -125,6 +132,56 @@ public class BoardControllerTest {
                 .andExpect(MockMvcResultMatchers.model().attributeExists("userId"))
                 .andExpect(MockMvcResultMatchers.model().attribute("board", board))
                 .andExpect(MockMvcResultMatchers.model().attribute("userId", userId));
+
+        assertTrue(board.getComments().contains(comment));
+        assertEquals(board, comment.getBoard());
+    }
+
+    @Test
+    public void testGetBoardDetailYesCommentYesChildrenComment() throws Exception {
+        // Test setup
+        Board board = new Board();
+        board.setId(1L);
+        board.setTitle("Test1 Title");
+        board.setDetail("Test1 Detail");
+
+        String userId = "testUser";
+
+        User user = new User();
+        user.setUserId(userId);
+        board.setUser(user);
+
+        Comment comment = new Comment();
+        comment.setId(1L);
+        comment.setContent("Test1 Comment");
+        comment.setCreatedAt(LocalDateTime.now());
+        comment.setUser(user);
+        comment.setBoard(board);
+
+        ChildrenComment childrenComment = new ChildrenComment();
+        childrenComment.setId(1L);
+        childrenComment.setContent("Test1 ChildrenComment");
+        childrenComment.setCreatedAt(LocalDateTime.now());
+        childrenComment.setUser(user);
+        childrenComment.setComment(comment);
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", userId);
+
+        when(boardService.findOneBoard(1L)).thenReturn(board);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/board/{id}", 1L).session(session))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.view().name("detail"))
+                .andExpect(MockMvcResultMatchers.model().attributeExists("board"))
+                .andExpect(MockMvcResultMatchers.model().attributeExists("userId"))
+                .andExpect(MockMvcResultMatchers.model().attribute("board", board))
+                .andExpect(MockMvcResultMatchers.model().attribute("userId", userId));
+
+        assertTrue(board.getComments().contains(comment));
+        assertEquals(board, comment.getBoard());
+        assertTrue(comment.getChildrenComments().contains(childrenComment));
+        assertEquals(comment, childrenComment.getComment());
     }
 
     @Test
@@ -217,7 +274,6 @@ public class BoardControllerTest {
 
     @Test
     public void testPostDeleteBoard() throws Exception {
-
         Long boardId = 1L;
         String userId = "testUser";
 
@@ -272,5 +328,25 @@ public class BoardControllerTest {
                         commentArg.getUser().equals(comment.getUser()) &&
                         commentArg.getBoard().equals(comment.getBoard())
         ));
+    }
+
+    @Test
+    public void testPostDeleteComment() throws Exception{
+        Long boardId = 1L;
+
+        Long commentId = 1L;
+        String userId = "testUser";
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("userId", userId);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/board/comment/delete")
+                        .session(session)
+                        .param("id", "1"))
+                .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
+                .andExpect(MockMvcResultMatchers.redirectedUrl("/board" + boardId));
+
+        verify(commentService, times(1)).delete(commentId);
+
     }
 }

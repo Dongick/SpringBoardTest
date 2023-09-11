@@ -5,14 +5,17 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "users")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id", nullable=false)
     private Long id;
 
+    // 사용자 id
     @Column(name = "userId", nullable = false, unique = true, length = 20)
     private String userId;
 
+    // 사용자 비밀번호
     @Column(name = "userPw", nullable = false, length = 20)
     private String userPw;
 

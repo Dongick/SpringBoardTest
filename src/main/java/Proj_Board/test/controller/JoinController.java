@@ -19,11 +19,13 @@ public class JoinController {
         this.userService = userService;
     }
 
+    // 회원가입 화면
     @GetMapping
     public String getJoin(){
         return "signup";
     }
 
+    // 회원가입
     @PostMapping
     public String postJoin(@RequestParam String userid, @RequestParam String password){
         User user = new User();

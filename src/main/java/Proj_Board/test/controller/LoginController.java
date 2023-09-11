@@ -20,11 +20,13 @@ public class LoginController {
         this.userService = userService;
     }
 
+    // 로그인 화면
     @GetMapping
     public String getLogin(){
         return "login";
     }
 
+    // 로그인
     @PostMapping
     public String postLogin(@RequestParam String userid, @RequestParam String password, HttpServletRequest request, Model model){
         User user = userService.findByUser(userid, password);
